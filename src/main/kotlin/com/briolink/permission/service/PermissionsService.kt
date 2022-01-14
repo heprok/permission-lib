@@ -13,9 +13,9 @@ import java.util.UUID
 
 @Service
 class PermissionsService {
-    private val permission_right_url = "user_permission_rights"
-    private val permission_role_url = "user_permission_roles"
-    val webClient = WebClient.create("http://192.168.0.60:8200/api/v1")
+    private val permissionRightUrl = "user_permission_rights"
+    private val permissionRoleUrl = "user_permission_roles"
+    val webClient = WebClient.create("\${permission.permission-service-api}")
 
     fun getPermissionRole(
         userId: UUID,
@@ -23,7 +23,7 @@ class PermissionsService {
         accessObjectType: AccessObjectTypeEnum
     ): PermissionRoleEnum? {
         val userPermissionRole = webClient.get()
-            .uri("/$permission_role_url/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId")
+            .uri("/$permissionRoleUrl/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId")
             .retrieve()
 //            .onStatus(HttpStatus::is4xxClientError) {
 //                it.bodyToMono(ErrorResponseDto::class.java)
@@ -44,7 +44,7 @@ class PermissionsService {
         permissionRight: PermissionRightEnum
     ): Boolean {
         val isHavePermission = webClient.get()
-            .uri("/$permission_right_url/check-permission/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId&permissionRight=${permissionRight.name}")
+            .uri("/$permissionRightUrl/check-permission/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId&permissionRight=${permissionRight.name}")
             .retrieve()
             .bodyToMono(Boolean::class.java)
             .block()
@@ -60,7 +60,7 @@ class PermissionsService {
         permissionRole: PermissionRoleEnum
     ): UserPermissionRole? {
         val userPermissionRoleDto = webClient.post()
-            .uri("/$permission_role_url/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId&permissionRole=${permissionRole.name}")
+            .uri("/$permissionRoleUrl/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId&permissionRole=${permissionRole.name}")
             .retrieve()
             .onStatus({ it == HttpStatus.CONFLICT }, { throw PermissionRoleExistException() })
             .bodyToMono(UserPermissionRoleDto::class.java)
@@ -76,7 +76,7 @@ class PermissionsService {
         permissionRole: PermissionRoleEnum
     ): UserPermissionRole? {
         val userPermissionRoleDto = webClient.put()
-            .uri("/$permission_role_url/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId&permissionRole=${permissionRole.name}")
+            .uri("/$permissionRoleUrl/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId&permissionRole=${permissionRole.name}")
             .retrieve().onStatus({ it == HttpStatus.NO_CONTENT }, { throw PermissionRoleExistException() })
             .bodyToMono(UserPermissionRoleDto::class.java).block()
 
@@ -89,7 +89,7 @@ class PermissionsService {
         accessObjectId: UUID,
     ): Boolean {
         val isDeleted = webClient.delete()
-            .uri("/$permission_role_url/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId")
+            .uri("/$permissionRoleUrl/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId")
             .retrieve().onStatus({ it == HttpStatus.NO_CONTENT }, { throw PermissionRoleExistException() })
             .bodyToMono(Boolean::class.java).block()
 
