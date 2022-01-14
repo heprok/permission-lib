@@ -6,7 +6,6 @@ import com.briolink.permission.enumeration.PermissionRightEnum
 import com.briolink.permission.enumeration.PermissionRoleEnum
 import com.briolink.permission.exception.exist.PermissionRoleExistException
 import com.briolink.permission.model.UserPermissionRole
-import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -16,7 +15,6 @@ import java.util.UUID
 class PermissionsService {
     private val permission_right_url = "user_permission_rights"
     private val permission_role_url = "user_permission_roles"
-    final val logger = LoggerFactory.getLogger(this::class.java)
     val webClient = WebClient.create("http://192.168.0.60:8200/api/v1")
 
     fun getPermissionRole(
@@ -79,11 +77,22 @@ class PermissionsService {
     ): UserPermissionRole? {
         val userPermissionRoleDto = webClient.put()
             .uri("/$permission_role_url/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId&permissionRole=${permissionRole.name}")
-            .retrieve()
-            .onStatus({ it == HttpStatus.NO_CONTENT }, { throw PermissionRoleExistException() })
-            .bodyToMono(UserPermissionRoleDto::class.java)
-            .block()
+            .retrieve().onStatus({ it == HttpStatus.NO_CONTENT }, { throw PermissionRoleExistException() })
+            .bodyToMono(UserPermissionRoleDto::class.java).block()
 
         return userPermissionRoleDto?.let { UserPermissionRole.fromDto(it) }
+    }
+
+    fun deletePermissionRole(
+        userId: UUID,
+        accessObjectType: AccessObjectTypeEnum,
+        accessObjectId: UUID,
+    ): Boolean {
+        val isDeleted = webClient.delete()
+            .uri("/$permission_role_url/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId")
+            .retrieve().onStatus({ it == HttpStatus.NO_CONTENT }, { throw PermissionRoleExistException() })
+            .bodyToMono(Boolean::class.java).block()
+
+        return isDeleted ?: false
     }
 }
