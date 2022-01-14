@@ -22,16 +22,15 @@ repositories {
 
 dependencies {
     // Spring Boot
-    runtimeOnly("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework:spring-tx")
-    annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    kapt("org.springframework.boot:spring-boot-autoconfigure-processor:${Versions.SPRING_BOOT_VERSION}")
-    kapt("org.springframework.boot:spring-boot-configuration-processor:${Versions.SPRING_BOOT_VERSION}")
+
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webflux")
 
     // FasterXML
-    api("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
-    api("com.fasterxml.jackson.module:jackson-module-kotlin")
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+    kapt("jakarta.annotation:jakarta.annotation-api")
 
     // Kotlin
     implementation(kotlin("reflect"))
@@ -49,7 +48,7 @@ java {
     withSourcesJar()
 }
 
-//publishing {
+// publishing {
 //    publications {
 //        create<MavenPublication>("maven") {
 //            from(components["java"])
@@ -72,7 +71,7 @@ java {
 //        }
 //        mavenLocal()
 //    }
-//}
+// }
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
