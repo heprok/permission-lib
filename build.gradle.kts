@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "com.briolink"
-version = "0.1.0-SNAPSHOT"
+version = "0.1.38-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
@@ -22,9 +22,11 @@ repositories {
 
 dependencies {
     // Spring Boot
-
-    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
+    annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    kapt("org.springframework.boot:spring-boot-autoconfigure-processor:${Versions.SPRING_BOOT_VERSION}")
+    kapt("org.springframework.boot:spring-boot-configuration-processor:${Versions.SPRING_BOOT_VERSION}")
 
     // FasterXML
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
@@ -48,16 +50,16 @@ java {
     withSourcesJar()
 }
 
-// publishing {
-//    publications {
-//        create<MavenPublication>("maven") {
-//            from(components["java"])
-//        }
-//    }
-//
-//    repositories {
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            from(components["java"])
+        }
+    }
+
+    repositories {
 //        maven {
-//            name = "Gitlab"
+//            name = "LocalMaven"
 //            url = uri("https://gitlab.com/api/v4/projects/29889174/packages/maven")
 //
 //            authentication {
@@ -69,9 +71,9 @@ java {
 //                value = System.getenv("GITLAB_DEPLOY_TOKEN")
 //            }
 //        }
-//        mavenLocal()
-//    }
-// }
+        mavenLocal()
+    }
+}
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
