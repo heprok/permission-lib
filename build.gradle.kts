@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "com.briolink"
-version = "0.1.38-SNAPSHOT"
+version = "0.1.40-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
