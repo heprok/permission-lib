@@ -1,12 +1,15 @@
 package com.briolink.permission.service
 
+import com.briolink.permission.dto.ListUserPermissionRightDto
 import com.briolink.permission.dto.UserPermissionRoleDto
 import com.briolink.permission.enumeration.AccessObjectTypeEnum
 import com.briolink.permission.enumeration.PermissionRightEnum
 import com.briolink.permission.enumeration.PermissionRoleEnum
 import com.briolink.permission.exception.exist.PermissionRoleExistException
+import com.briolink.permission.model.UserPermissionRights
 import com.briolink.permission.model.UserPermissionRole
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.client.WebClient
 import java.util.UUID
 
@@ -34,26 +37,25 @@ class PermissionService(private val webClient: WebClient) {
         return userPermissionRole?.let { PermissionRoleEnum.ofId(it.role.id) }
     }
 
-//    fun getUserPermissionRights(
-//        userId: UUID,
-//        accessObjectId: UUID,
-//        accessObjectType: AccessObjectTypeEnum
-//    ): UserPermissionRights? {
-//        val userPermissionRightDto = webClient.get()
-//            .uri("/$permissionRightUrl/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId")
-//            .accept(MediaType.APPLICATION_JSON)
-//            .retrieve()
-//            .bodyToMono(UserPermissionRightDto::class.java)
-//            .block()
-//
-//        return userPermissionRightDto?.let {
-//            UserPermissionRights(
-//                permissionRole = PermissionRoleEnum.ofId(userPermissionRightDto.userRole.role.id),
-//                permissionRights = listOf(userPermissionRightDto.),
-//
-//            )
-//        }
-//    }
+    fun getUserPermissionRights(
+        userId: UUID,
+        accessObjectId: UUID,
+        accessObjectType: AccessObjectTypeEnum
+    ): UserPermissionRights? {
+        val listUserPermissionRightsDto = webClient.get()
+            .uri("/$permissionRightUrl/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId")
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .bodyToMono(ListUserPermissionRightDto::class.java)
+            .block()
+
+        return listUserPermissionRightsDto?.let {
+            UserPermissionRights(
+                permissionRole = listUserPermissionRightsDto.userRole,
+                permissionRights = listUserPermissionRightsDto.rights,
+            )
+        }
+    }
 
     fun isHavaPermission(
         userId: UUID,
