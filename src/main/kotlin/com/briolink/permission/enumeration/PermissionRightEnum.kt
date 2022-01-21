@@ -26,7 +26,10 @@ enum class PermissionRightEnum(@JsonValue val id: Int) {
     IsCanEditCompanyService(7),
 
     @JsonProperty("8")
-    IsCanEditNeedsExchange(8);
+    IsCanEditNeedsExchange(8),
+
+    @JsonProperty("9")
+    IsCanCreateProject(8);
 
     companion object {
         private val map = values().associateBy(PermissionRightEnum::id)

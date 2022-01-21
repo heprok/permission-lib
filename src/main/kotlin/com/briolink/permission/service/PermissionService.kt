@@ -57,7 +57,7 @@ class PermissionService(private val webClient: WebClient) {
         }
     }
 
-    fun isHavaPermission(
+    fun isHavePermission(
         userId: UUID,
         accessObjectType: AccessObjectTypeEnum,
         accessObjectId: UUID,
