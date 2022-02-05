@@ -1,2 +1,2 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-com.briolink.permission.configuration.BlPermissionServiceAutoConfiguration
+com.briolink.lib.permission.configuration.BlPermissionServiceAutoConfiguration

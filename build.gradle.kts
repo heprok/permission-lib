@@ -12,8 +12,8 @@ plugins {
     `maven-publish`
 }
 
-group = "com.briolink"
-version = "0.1.43-SNAPSHOT"
+group = "com.briolink.lib"
+version = "0.2.0-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
