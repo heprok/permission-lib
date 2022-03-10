@@ -1,5 +1,6 @@
 package com.briolink.lib.permission.configuration
 
+import com.briolink.lib.permission.AllowedRightAspect
 import com.briolink.lib.permission.service.PermissionService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
@@ -26,4 +27,8 @@ class BlPermissionServiceAutoConfiguration {
     @Bean
     @Primary
     fun permissionService() = PermissionService(WebClient.create("$urlApi/api/v$apiVersion/"))
+
+    @Bean
+    @Primary
+    fun allowedRightAspect() = AllowedRightAspect(permissionService())
 }
