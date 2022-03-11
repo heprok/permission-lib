@@ -3,6 +3,7 @@ package com.briolink.lib.permission
 import com.briolink.lib.permission.enumeration.AccessObjectTypeEnum
 import com.briolink.lib.permission.enumeration.PermissionRightEnum
 import com.briolink.lib.permission.exception.AccessDeniedException
+import com.briolink.lib.permission.exception.AllowRightMustBeArgAccessObjectIdException
 import com.briolink.lib.permission.service.PermissionService
 import org.aspectj.lang.ProceedingJoinPoint
 import org.aspectj.lang.annotation.Around
@@ -17,7 +18,6 @@ import java.util.stream.Collectors
 @MustBeDocumented
 annotation class AllowedRights(
     val accessObjectType: AccessObjectTypeEnum,
-    val accessObjectId: String,
     val value: Array<PermissionRightEnum>
 )
 
@@ -34,25 +34,24 @@ class AllowedRightAspect(
             (jp.signature as MethodSignature).method
                 .getAnnotation(AllowedRights::class.java).value,
         ).collect(Collectors.toSet())
+
         val accessObjectType: AccessObjectTypeEnum =
             (jp.signature as MethodSignature).method.getAnnotation(AllowedRights::class.java).accessObjectType
-        val accessObjectId =
-            (jp.signature as MethodSignature).method.getAnnotation(AllowedRights::class.java).accessObjectId
-//        val accessObjectId =
-//            (jp.signature as MethodSignature).method.parameters.find { it.name == "accessObjectId" }
-        println(accessObjectId)
-//        jp.args.forEach {
-//            println(it)
-//        }
-//        println(
-//            (jp.signature as MethodSignature).method.parameters
-//        )
+
+        var accessObjectId: UUID? = null
+        (jp.signature as MethodSignature).parameterNames.forEachIndexed { index, it ->
+            if (it == "accessObjectId")
+                accessObjectId = UUID.fromString(jp.args[index] as String)
+        }
+
+        if(accessObjectId == null ) throw AllowRightMustBeArgAccessObjectIdException((jp.signature as MethodSignature).method.name)
+
         if (rights != null) {
             for (right in rights) {
                 if (permissionService.isHavePermission(
                         userId = SecurityUtil.currentUserAccountId,
                         accessObjectType = accessObjectType,
-                        accessObjectId = UUID.randomUUID(),
+                        accessObjectId = accessObjectId!!,
                         permissionRight = right,
                     )
                 ) {
