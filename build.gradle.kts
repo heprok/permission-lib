@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "com.briolink.lib"
-version = "0.2.17-SNAPSHOT"
+version = "0.2.0-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
@@ -61,19 +61,19 @@ publishing {
     }
 
     repositories {
-//        maven {
-//            name = "LocalMaven"
-//            url = uri("https://gitlab.com/api/v4/projects/29889174/packages/maven")
-//
-//            authentication {
-//                create<HttpHeaderAuthentication>("header")
-//            }
-//
-//            credentials(HttpHeaderCredentials::class) {
-//                name = "Deploy-Token"
-//                value = System.getenv("GITLAB_DEPLOY_TOKEN")
-//            }
-//        }
+        maven {
+            name = "GitLab"
+            url = uri("https://gitlab.com/api/v4/projects/32844103/packages/maven")
+
+            authentication {
+                create<HttpHeaderAuthentication>("header")
+            }
+
+            credentials(HttpHeaderCredentials::class) {
+                name = "Deploy-Token"
+                value = System.getenv("GITLAB_DEPLOY_TOKEN")
+            }
+        }
         mavenLocal()
     }
 }
