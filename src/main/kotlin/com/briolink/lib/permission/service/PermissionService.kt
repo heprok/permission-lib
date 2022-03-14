@@ -6,6 +6,7 @@ import com.briolink.lib.permission.enumeration.AccessObjectTypeEnum
 import com.briolink.lib.permission.enumeration.PermissionRightEnum
 import com.briolink.lib.permission.enumeration.PermissionRoleEnum
 import com.briolink.lib.permission.exception.exist.PermissionRoleExistException
+import com.briolink.lib.permission.exception.notfound.UserPermissionRoleNotFoundException
 import com.briolink.lib.permission.model.UserPermissionRights
 import com.briolink.lib.permission.model.UserPermissionRole
 import org.springframework.http.HttpStatus
@@ -172,7 +173,7 @@ class PermissionService(private val webClient: WebClient) {
     ): Boolean {
         val isDeleted = webClient.delete()
             .uri("/$permissionRoleUrl/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId")
-            .retrieve().onStatus({ it == HttpStatus.NO_CONTENT }, { throw PermissionRoleExistException() })
+            .retrieve().onStatus({ it == HttpStatus.NO_CONTENT }, { throw UserPermissionRoleNotFoundException() })
             .bodyToMono(Boolean::class.java).block()
 
         return isDeleted ?: false

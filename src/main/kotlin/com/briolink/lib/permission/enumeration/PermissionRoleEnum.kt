@@ -1,5 +1,6 @@
 package com.briolink.lib.permission.enumeration
 
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonValue
 
@@ -18,6 +19,7 @@ enum class PermissionRoleEnum(@JsonValue val id: Int, val level: Int) {
 
     companion object {
         private val mapId = values().associateBy(PermissionRoleEnum::id)
+        @JsonCreator(mode = JsonCreator.Mode.DELEGATING) @JvmStatic
         fun ofId(id: Int): PermissionRoleEnum = mapId[id]!!
     }
 }
