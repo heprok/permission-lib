@@ -38,6 +38,37 @@ class PermissionService(private val webClient: WebClient) {
         return userPermissionRole?.let { PermissionRoleEnum.ofId(it.role.id) }
     }
 
+    fun setPermissionRights(
+        userId: UUID,
+        accessObjectId: UUID,
+        accessObjectType: AccessObjectTypeEnum,
+        permissionRole: PermissionRoleEnum,
+        permissionRights: List<PermissionRightEnum>
+    ): UserPermissionRights? {
+        val listUserPermissionRightsDto = webClient.post()
+            .uri("/$permissionRightUrl/")
+            .bodyValue(
+                UserPermissionRightsDto(
+                    accessObjectType,
+                    accessObjectId,
+                    permissionRole,
+                    permissionRights,
+                    userId
+                )
+            )
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .bodyToMono(com.briolink.lib.permission.dto.ListUserPermissionRightDto::class.java)
+            .block()
+
+        return listUserPermissionRightsDto?.let {
+            UserPermissionRights(
+                permissionRole = listUserPermissionRightsDto.userRole,
+                permissionRights = listUserPermissionRightsDto.rights,
+            )
+        }
+    }
+
     fun getUserPermissionRights(
         userId: UUID,
         accessObjectId: UUID,
