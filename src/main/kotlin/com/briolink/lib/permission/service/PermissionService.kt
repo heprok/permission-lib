@@ -1,6 +1,5 @@
 package com.briolink.lib.permission.service
 
-import com.briolink.lib.permission.dto.UserPermissionRightsDto
 import com.briolink.lib.permission.dto.UserPermissionRoleDto
 import com.briolink.lib.permission.enumeration.AccessObjectTypeEnum
 import com.briolink.lib.permission.enumeration.PermissionRightEnum
@@ -11,7 +10,6 @@ import com.briolink.lib.permission.model.UserPermissionRights
 import com.briolink.lib.permission.model.UserPermissionRole
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
-import org.springframework.web.reactive.function.BodyInserters
 import org.springframework.web.reactive.function.client.WebClient
 import java.util.UUID
 
@@ -47,16 +45,15 @@ class PermissionService(private val webClient: WebClient) {
         permissionRights: List<PermissionRightEnum>
     ): UserPermissionRights? {
         val listUserPermissionRightsDto = webClient.post()
-            .uri("/$permissionRightUrl/")
-            .bodyValue(
-                UserPermissionRightsDto(
-                    accessObjectType,
-                    accessObjectId,
-                    permissionRole,
-                    permissionRights,
-                    userId
-                )
-            )
+            .uri {
+                it.path("/$permissionRightUrl/")
+                    .queryParam("accessObjectType", accessObjectType)
+                    .queryParam("accessObjectId", accessObjectId)
+                    .queryParam("permissionRole", permissionRole)
+                    .queryParam("userId", userId)
+                    .queryParam("permissionRights", permissionRights)
+                    .build()
+            }
             .accept(MediaType.APPLICATION_JSON)
             .retrieve()
             .bodyToMono(com.briolink.lib.permission.dto.ListUserPermissionRightDto::class.java)
@@ -134,36 +131,6 @@ class PermissionService(private val webClient: WebClient) {
             .bodyToMono(UserPermissionRoleDto::class.java).block()
 
         return userPermissionRoleDto?.let { UserPermissionRole.fromDto(it) }
-    }
-
-    fun enablePermissionRights(
-        userId: UUID,
-        accessObjectType: AccessObjectTypeEnum,
-        accessObjectId: UUID,
-        permissionRole: PermissionRoleEnum,
-        permissionRight: List<PermissionRightEnum>
-    ): UserPermissionRights? {
-        val request = UserPermissionRightsDto(
-            accessObjectType = accessObjectType,
-            accessObjectId = accessObjectId,
-            permissionRole = permissionRole,
-            permissionRights = permissionRight,
-            userId = userId
-        )
-        val listUserPermissionRightsDto = webClient.post()
-            .uri("/$permissionRightUrl")
-            .accept(MediaType.APPLICATION_JSON)
-            .bodyValue(BodyInserters.fromValue(request))
-            .retrieve()
-            .bodyToMono(com.briolink.lib.permission.dto.ListUserPermissionRightDto::class.java)
-            .block()
-
-        return listUserPermissionRightsDto?.let {
-            UserPermissionRights(
-                permissionRole = listUserPermissionRightsDto.userRole,
-                permissionRights = listUserPermissionRightsDto.rights,
-            )
-        }
     }
 
     fun deletePermissionRole(
