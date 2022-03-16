@@ -13,7 +13,7 @@ plugins {
 }
 
 group = "com.briolink.lib"
-version = "0.2.1-SNAPSHOT"
+version = "0.2.2-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
 repositories {
@@ -25,8 +25,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     annotationProcessor("org.springframework.boot:spring-boot-autoconfigure-processor")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
+    implementation("org.springframework.security:spring-security-core:${Versions.SPRING_SECURITY}")
+    implementation("org.springframework.security:spring-security-oauth2-jose:${Versions.SPRING_SECURITY}")
+    implementation("org.springframework.security:spring-security-oauth2-resource-server:${Versions.SPRING_SECURITY}")
     implementation("org.aspectj:aspectjrt:1.7.3")
     kapt("org.springframework.boot:spring-boot-autoconfigure-processor:${Versions.SPRING_BOOT_VERSION}")
     kapt("org.springframework.boot:spring-boot-configuration-processor:${Versions.SPRING_BOOT_VERSION}")
