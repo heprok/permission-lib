@@ -1,7 +1,5 @@
 package com.briolink.lib.permission
 
-import com.briolink.lib.permission.enumeration.AccessObjectTypeEnum
-import com.briolink.lib.permission.enumeration.PermissionRightEnum
 import com.briolink.lib.permission.exception.AccessDeniedException
 import com.briolink.lib.permission.exception.AllowRightMustBeArgAccessObjectIdException
 import com.briolink.lib.permission.service.PermissionService
@@ -17,8 +15,9 @@ import java.util.stream.Collectors
 @Target(AnnotationTarget.FUNCTION)
 @MustBeDocumented
 annotation class AllowedRights(
-    val accessObjectType: AccessObjectTypeEnum,
-    val value: Array<PermissionRightEnum>
+    val value: Array<String>,
+    val argumentNameId: String = "accessObjectId",
+    val operatorAnd: Boolean = true,
 )
 
 @Aspect
@@ -30,32 +29,37 @@ class AllowedRightAspect(
     @Around("@annotation(com.briolink.lib.permission.AllowedRights)")
     @Throws(Throwable::class)
     fun doSomething(jp: ProceedingJoinPoint): Any {
-        val rights: MutableSet<PermissionRightEnum>? = Arrays.stream(
+        val rights: MutableSet<String>? = Arrays.stream(
             (jp.signature as MethodSignature).method
                 .getAnnotation(AllowedRights::class.java).value,
         ).collect(Collectors.toSet())
 
-        val accessObjectType: AccessObjectTypeEnum =
-            (jp.signature as MethodSignature).method.getAnnotation(AllowedRights::class.java).accessObjectType
+        val operatorAnd: Boolean =
+            (jp.signature as MethodSignature).method.getAnnotation(AllowedRights::class.java).operatorAnd
+
+        val argumentNameId: String =
+            (jp.signature as MethodSignature).method.getAnnotation(AllowedRights::class.java).argumentNameId
 
         var accessObjectId: UUID? = null
         (jp.signature as MethodSignature).parameterNames.forEachIndexed { index, it ->
-            if (it == "accessObjectId")
+            if (it == argumentNameId) {
                 accessObjectId = UUID.fromString(jp.args[index] as String)
+                jp.args[index]
+            }
         }
 
-        if(accessObjectId == null ) throw AllowRightMustBeArgAccessObjectIdException((jp.signature as MethodSignature).method.name)
+        if (accessObjectId == null) throw AllowRightMustBeArgAccessObjectIdException((jp.signature as MethodSignature).method.name)
 
         if (rights != null) {
             for (right in rights) {
-                if (permissionService.isHavePermission(
-                        userId = SecurityUtil.currentUserAccountId,
-                        accessObjectType = accessObjectType,
-                        accessObjectId = accessObjectId!!,
-                        permissionRight = right,
-                    )
-                ) {
-                    return jp.proceed()
+                permissionService.checkPermission(
+                    userId = SecurityUtil.currentUserAccountId,
+                    accessObjectId = accessObjectId!!,
+                    right = right,
+                ).let {
+                    if (operatorAnd && !it) throw AccessDeniedException()
+                    if (!operatorAnd && it) return jp.proceed()
+                    if (operatorAnd && rights.last() == right) return jp.proceed()
                 }
             }
         }

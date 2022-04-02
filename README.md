@@ -4,6 +4,7 @@
 
 To connect to the project in gradle.kts connect the maven repository.
 
+Dependent on event lib
 ```kotlin
 repositories {
     maven {

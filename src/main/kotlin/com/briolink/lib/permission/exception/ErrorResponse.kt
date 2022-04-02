@@ -10,7 +10,7 @@ data class ErrorResponse(
     @JsonProperty
     val error: String? = null,
     @JsonProperty
-    var message: String? = null,
+    override var message: String? = null,
     @JsonProperty
     val status: Int,
-)
+) : RuntimeException()
