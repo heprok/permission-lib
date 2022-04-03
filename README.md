@@ -51,6 +51,7 @@ You can now access com.briolink.lib.service.PermissionService
 | EditNeedsExchange  | Company          | CRUD Needs                                               |
 | CreateProject      | Company          | Can create projects without confirmation                 |
 | EditConnection     | Company          | CRUD All connection in Company                           |
+| EditWidget         | Company          | CRUD All connection in Company                           |
 
 ### Basic classes
 
