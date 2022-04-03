@@ -38,6 +38,20 @@ You can now access com.briolink.lib.service.PermissionService
 
 ## Documentation
 
+### Table rights
+| Name right         | AccessObjectType | Description                                              |
+|--------------------|------------------|----------------------------------------------------------|
+| EditOwner          | Company          | Can assign owners and remove them                        |
+| EditAdmin          | Company          | Can assign admins and remove them                        |
+| EditSuperuser      | Company          | Can assign Superusers and remove them, edit their rights |
+| EditCompanyProfile | Company          | Can edit setting and info about company                  |
+| EditEmployees      | Company          | Can view the admin panel. Accept new employees           |
+| EditProject        | Company          | CRUD Project in Company profile                          |
+| EditCompanyService | Company          | CRUD All services in Company                             |
+| EditNeedsExchange  | Company          | CRUD Needs                                               |
+| CreateProject      | Company          | Can create projects without confirmation                 |
+| EditConnection     | Company          | CRUD All connection in Company                           |
+
 ### Basic classes
 
 [AllowedRights](https://gitlab.com/briolink/network/backend/permission-lib/-/blob/main/src/main/kotlin/com/briolink/lib/permission/AllowedRights.kt)
@@ -63,15 +77,13 @@ If more than one value is specified in value, the function will execute when the
 When the user wants to update the company logo, the user must have the right IsCanEditCompanyProfile
 
 ```kotlin
-    @AllowedRights(
-    accessObjectType = AccessObjectTypeEnum.Company,
-    value = [PermissionRightEnum.IsCanEditCompanyProfile]
+    @AllowedRights(value = ["EditCompanyProfile@Company"], argumentNameId="id")
 )
 fun uploadCompanyImage(
-    @InputArgument("id") accessObjectId: String,
+    @InputArgument("id") id: String,
     @InputArgument("image") image: MultipartFile?
 ): URL {
-    return companyService.uploadCompanyProfileImage(UUID.fromString(accessObjectId), image)
+    return companyService.uploadCompanyProfileImage(UUID.fromString(id), image)
 }
 ```
 
@@ -98,12 +110,17 @@ try {
 
 ### Check permission right
 
+EditCompanyService@Company
+- EditCompanyService - this action
+- Company - this access object type
+
+You see more in the table rights
+
 ```kotlin
-if (permissionService.isHavePermission(
-        accessObjectType = AccessObjectTypeEnum.Company,
+if (permissionService.checkPermission(
         userId = SecurityUtil.currentUserAccountId,
         accessObjectId = UUID.fromString(companyId),
-        permissionRight = PermissionRightEnum.IsCanEditCompanyService
+        right = "EditCompanyService@Company"
     )
 ) updateCompanyService(name = "New company service")
 ```
