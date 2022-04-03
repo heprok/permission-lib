@@ -78,7 +78,7 @@ When the user wants to update the company logo, the user must have the right IsC
 
 ```kotlin
     @AllowedRights(value = ["EditCompanyProfile@Company"], argumentNameId="id")
-)
+
 fun uploadCompanyImage(
     @InputArgument("id") id: String,
     @InputArgument("image") image: MultipartFile?
