@@ -2,6 +2,7 @@ package com.briolink.lib.permission.configuration
 
 import com.briolink.lib.permission.AllowedRightAspect
 import com.briolink.lib.permission.service.PermissionService
+import com.briolink.lib.permission.service.WebClientPermissionService
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -26,7 +27,11 @@ class BlPermissionServiceAutoConfiguration {
 
     @Bean
     @Primary
-    fun permissionService() = PermissionService(WebClient.create("$urlApi/api/v$apiVersion/"))
+    fun webClientPermissionService() = WebClientPermissionService(WebClient.create("$urlApi/api/v$apiVersion/"))
+
+    @Bean
+    @Primary
+    fun permissionService() = PermissionService(webClientPermissionService())
 
     @Bean
     @Primary

@@ -1,68 +1,55 @@
 package com.briolink.lib.permission.service
 
-import com.briolink.lib.permission.dto.UserPermissionRoleDto
 import com.briolink.lib.permission.enumeration.AccessObjectTypeEnum
-import com.briolink.lib.permission.enumeration.PermissionRightEnum
 import com.briolink.lib.permission.enumeration.PermissionRoleEnum
 import com.briolink.lib.permission.exception.exist.PermissionRoleExistException
+import com.briolink.lib.permission.exception.notfound.PermissionRightNotFoundException
 import com.briolink.lib.permission.exception.notfound.UserPermissionRoleNotFoundException
+import com.briolink.lib.permission.model.PermissionRight
 import com.briolink.lib.permission.model.UserPermissionRights
 import com.briolink.lib.permission.model.UserPermissionRole
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
-import org.springframework.web.reactive.function.client.WebClient
 import java.util.UUID
 
-class PermissionService(private val webClient: WebClient) {
+class PermissionService(private val webClient: WebClientPermissionService) {
     private val permissionRightUrl = "user_permission_rights"
     private val permissionRoleUrl = "user_permission_roles"
 
     fun getPermissionRole(
         userId: UUID,
         accessObjectId: UUID,
-        accessObjectType: AccessObjectTypeEnum
+        accessObjectType: String
     ): PermissionRoleEnum? {
-        val userPermissionRole = webClient.get()
-            .uri("/$permissionRoleUrl/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId")
-            .retrieve()
-//            .onStatus(HttpStatus::is4xxClientError) {
-//                it.bodyToMono(ErrorResponseDto::class.java)
-//            }
-//            .onStatus(HttpStatus::is4xxClientError) { _ ->
-//                Mono.error<PermissionRoleNotFoundException>(PermissionRoleNotFoundException(userId, accessObjectId))
-//            }
-            .bodyToMono(UserPermissionRoleDto::class.java)
-            .block()
-
-        return userPermissionRole?.let { PermissionRoleEnum.ofId(it.role.id) }
+        return try {
+            webClient.getPermissionRole(
+                userId = userId,
+                accessObjectId = accessObjectId,
+                accessObjectType = accessObjectType
+            ).block()?.let {
+                PermissionRoleEnum.ofId(it.role.id)
+            }
+        } catch (ex: UserPermissionRoleNotFoundException) {
+            null
+        }
     }
 
     fun setPermissionRights(
         userId: UUID,
         accessObjectId: UUID,
-        accessObjectType: AccessObjectTypeEnum,
-        permissionRole: PermissionRoleEnum,
-        permissionRights: List<PermissionRightEnum>
+        accessObjectType: String,
+        permissionRole: String,
+        permissionRights: List<String>
     ): UserPermissionRights? {
-        val listUserPermissionRightsDto = webClient.post()
-            .uri {
-                it.path("/$permissionRightUrl/")
-                    .queryParam("accessObjectType", accessObjectType)
-                    .queryParam("accessObjectId", accessObjectId)
-                    .queryParam("permissionRole", permissionRole)
-                    .queryParam("userId", userId)
-                    .queryParam("permissionRights", permissionRights)
-                    .build()
-            }
-            .accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToMono(com.briolink.lib.permission.dto.ListUserPermissionRightDto::class.java)
-            .block()
 
-        return listUserPermissionRightsDto?.let {
+        return webClient.setPermissionRights(
+            userId = userId,
+            accessObjectId = accessObjectId,
+            accessObjectType = accessObjectType,
+            permissionRole = permissionRole,
+            permissionRights = permissionRights
+        ).block()?.let {
             UserPermissionRights(
-                permissionRole = listUserPermissionRightsDto.userRole,
-                permissionRights = listUserPermissionRightsDto.rights,
+                permissionRole = it.userRole,
+                permissionRights = it.rights,
             )
         }
     }
@@ -72,34 +59,40 @@ class PermissionService(private val webClient: WebClient) {
         accessObjectId: UUID,
         accessObjectType: AccessObjectTypeEnum
     ): UserPermissionRights? {
-        val listUserPermissionRightsDto = webClient.get()
-            .uri("/$permissionRightUrl/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId")
-            .accept(MediaType.APPLICATION_JSON)
-            .retrieve()
-            .bodyToMono(com.briolink.lib.permission.dto.ListUserPermissionRightDto::class.java)
-            .block()
-
-        return listUserPermissionRightsDto?.let {
-            UserPermissionRights(
-                permissionRole = listUserPermissionRightsDto.userRole,
-                permissionRights = listUserPermissionRightsDto.rights,
-            )
+        return try {
+            webClient.getUserPermissionRights(
+                userId = userId,
+                accessObjectId = accessObjectId,
+                accessObjectType = accessObjectType
+            ).block()?.let {
+                UserPermissionRights(
+                    permissionRole = it.userRole,
+                    permissionRights = it.rights,
+                )
+            }
+        } catch (ex: PermissionRightNotFoundException) {
+            null
         }
     }
 
-    fun isHavePermission(
+    fun checkPermission(
         userId: UUID,
-        accessObjectType: AccessObjectTypeEnum,
         accessObjectId: UUID,
-        permissionRight: PermissionRightEnum
+        right: PermissionRight
     ): Boolean {
-        val isHavePermission = webClient.get()
-            .uri("/$permissionRightUrl/check-permission/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId&permissionRight=${permissionRight.name}")
-            .retrieve()
-            .bodyToMono(Boolean::class.java)
-            .block()
+        return webClient.checkPermission(
+            userId = userId,
+            accessObjectId = accessObjectId,
+            right = right
+        ).block() ?: false
+    }
 
-        return isHavePermission ?: false
+    fun checkPermission(
+        userId: UUID,
+        accessObjectId: UUID,
+        right: String
+    ): Boolean {
+        return checkPermission(userId, accessObjectId, PermissionRight.fromString(right))
     }
 
     @Throws(PermissionRoleExistException::class)
@@ -109,14 +102,13 @@ class PermissionService(private val webClient: WebClient) {
         accessObjectId: UUID,
         permissionRole: PermissionRoleEnum
     ): UserPermissionRole? {
-        val userPermissionRoleDto = webClient.post()
-            .uri("/$permissionRoleUrl/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId&permissionRole=${permissionRole.name}")
-            .retrieve()
-            .onStatus({ it == HttpStatus.CONFLICT }, { throw PermissionRoleExistException() })
-            .bodyToMono(UserPermissionRoleDto::class.java)
-            .block()
+        return webClient.createPermissionRole(
+            userId = userId,
+            accessObjectType = accessObjectType,
+            accessObjectId = accessObjectId,
+            permissionRole = permissionRole
 
-        return userPermissionRoleDto?.let { UserPermissionRole.fromDto(it) }
+        ).block()?.let { UserPermissionRole.fromDto(it) }
     }
 
     fun editPermissionRole(
@@ -125,12 +117,12 @@ class PermissionService(private val webClient: WebClient) {
         accessObjectId: UUID,
         permissionRole: PermissionRoleEnum
     ): UserPermissionRole? {
-        val userPermissionRoleDto = webClient.put()
-            .uri("/$permissionRoleUrl/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId&permissionRole=${permissionRole.name}")
-            .retrieve().onStatus({ it == HttpStatus.NO_CONTENT }, { throw PermissionRoleExistException() })
-            .bodyToMono(UserPermissionRoleDto::class.java).block()
-
-        return userPermissionRoleDto?.let { UserPermissionRole.fromDto(it) }
+        return webClient.editPermissionRole(
+            userId = userId,
+            accessObjectType = accessObjectType,
+            accessObjectId = accessObjectId,
+            permissionRole = permissionRole
+        ).block()?.let { UserPermissionRole.fromDto(it) }
     }
 
     fun deletePermissionRole(
@@ -138,11 +130,10 @@ class PermissionService(private val webClient: WebClient) {
         accessObjectType: AccessObjectTypeEnum,
         accessObjectId: UUID,
     ): Boolean {
-        val isDeleted = webClient.delete()
-            .uri("/$permissionRoleUrl/?accessObjectId=$accessObjectId&accessObjectType=${accessObjectType.name}&userId=$userId")
-            .retrieve().onStatus({ it == HttpStatus.NO_CONTENT }, { throw UserPermissionRoleNotFoundException() })
-            .bodyToMono(Boolean::class.java).block()
-
-        return isDeleted ?: false
+        return webClient.deletePermissionRole(
+            userId = userId,
+            accessObjectType = accessObjectType,
+            accessObjectId = accessObjectId
+        ).block() ?: false
     }
 }

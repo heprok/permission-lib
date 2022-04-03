@@ -1,7 +1,7 @@
 package com.briolink.lib.permission.dto
 
-import com.briolink.lib.permission.enumeration.PermissionRightEnum
 import com.briolink.lib.permission.enumeration.PermissionRoleEnum
+import com.briolink.lib.permission.model.PermissionRight
 import com.fasterxml.jackson.annotation.JsonProperty
 import java.util.UUID
 
@@ -23,6 +23,6 @@ data class ListUserPermissionRightDto(
     val userRole: PermissionRoleEnum
         get() = PermissionRoleEnum.ofId(listUserPermissionRightsDto.first().userRole.role.id)
 
-    val rights: List<PermissionRightEnum>
-        get() = listUserPermissionRightsDto.map { PermissionRightEnum.ofId(it.right.id) }
+    val rights: List<PermissionRight>
+        get() = listUserPermissionRightsDto.map { PermissionRight(it.userRole.accessObjectType.name, it.right.name) }
 }
