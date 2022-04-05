@@ -30,7 +30,7 @@ In the project configuration add lines to connect to the api permission-service
 ```yaml
 permission-service:
   api:
-    url: https://permission-service.${env.spring_profiles_active}.svc.cluster.local/
+    url: http://permission-service.${env.spring_profiles_active}.svc.cluster.local/
     version: 1
 ```
 
