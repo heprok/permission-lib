@@ -10,11 +10,8 @@ import com.briolink.lib.permission.model.UserPermissionRights
 import com.briolink.lib.permission.model.UserPermissionRole
 import java.util.UUID
 
-class PermissionService(private val webClient: WebClientPermissionService) {
-    private val permissionRightUrl = "user_permission_rights"
-    private val permissionRoleUrl = "user_permission_roles"
-
-    fun getPermissionRole(
+open class PermissionService(private val webClient: WebClientPermissionService) {
+    open fun getPermissionRole(
         userId: UUID,
         accessObjectId: UUID,
         accessObjectType: String
@@ -32,7 +29,7 @@ class PermissionService(private val webClient: WebClientPermissionService) {
         }
     }
 
-    fun setPermissionRights(
+    open fun setPermissionRights(
         userId: UUID,
         accessObjectId: UUID,
         accessObjectType: String,
@@ -54,7 +51,7 @@ class PermissionService(private val webClient: WebClientPermissionService) {
         }
     }
 
-    fun getUserPermissionRights(
+    open fun getUserPermissionRights(
         userId: UUID,
         accessObjectId: UUID,
         accessObjectType: AccessObjectTypeEnum
@@ -75,7 +72,7 @@ class PermissionService(private val webClient: WebClientPermissionService) {
         }
     }
 
-    fun checkPermission(
+    open fun checkPermission(
         userId: UUID,
         accessObjectId: UUID,
         right: PermissionRight
@@ -87,7 +84,7 @@ class PermissionService(private val webClient: WebClientPermissionService) {
         ).block() ?: false
     }
 
-    fun checkPermission(
+    open fun checkPermission(
         userId: UUID,
         accessObjectId: UUID,
         right: String
@@ -96,7 +93,7 @@ class PermissionService(private val webClient: WebClientPermissionService) {
     }
 
     @Throws(PermissionRoleExistException::class)
-    fun createPermissionRole(
+    open fun createPermissionRole(
         userId: UUID,
         accessObjectType: AccessObjectTypeEnum,
         accessObjectId: UUID,
@@ -111,7 +108,7 @@ class PermissionService(private val webClient: WebClientPermissionService) {
         ).block()?.let { UserPermissionRole.fromDto(it) }
     }
 
-    fun editPermissionRole(
+    open fun editPermissionRole(
         userId: UUID,
         accessObjectType: AccessObjectTypeEnum,
         accessObjectId: UUID,
@@ -125,7 +122,7 @@ class PermissionService(private val webClient: WebClientPermissionService) {
         ).block()?.let { UserPermissionRole.fromDto(it) }
     }
 
-    fun deletePermissionRole(
+    open fun deletePermissionRole(
         userId: UUID,
         accessObjectType: AccessObjectTypeEnum,
         accessObjectId: UUID,

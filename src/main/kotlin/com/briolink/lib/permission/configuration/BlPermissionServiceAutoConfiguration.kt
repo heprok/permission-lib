@@ -30,10 +30,9 @@ class BlPermissionServiceAutoConfiguration {
     fun webClientPermissionService() = WebClientPermissionService(WebClient.create("$urlApi/api/v$apiVersion/"))
 
     @Bean
-    @Primary
-    fun permissionService() = PermissionService(webClientPermissionService())
+    fun permissionService(webClientPS: WebClientPermissionService) = PermissionService(webClientPS)
 
     @Bean
     @Primary
-    fun allowedRightAspect() = AllowedRightAspect(permissionService())
+    fun allowedRightAspect(permissionService: PermissionService) = AllowedRightAspect(permissionService)
 }
