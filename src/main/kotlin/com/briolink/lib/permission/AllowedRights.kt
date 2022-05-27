@@ -1,5 +1,6 @@
 package com.briolink.lib.permission
 
+import com.briolink.lib.common.util.BlSecurityUtil
 import com.briolink.lib.permission.exception.AccessDeniedException
 import com.briolink.lib.permission.exception.AllowRightMustBeArgAccessObjectIdException
 import com.briolink.lib.permission.service.PermissionService
@@ -53,7 +54,7 @@ class AllowedRightAspect(
         if (rights != null) {
             for (right in rights) {
                 permissionService.checkPermission(
-                    userId = SecurityUtil.currentUserAccountId,
+                    userId = BlSecurityUtil.currentUserId,
                     accessObjectId = accessObjectId!!,
                     right = right,
                 ).let {

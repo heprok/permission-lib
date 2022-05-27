@@ -16,12 +16,12 @@ import org.springframework.web.reactive.function.client.WebClient
 import reactor.core.publisher.Mono
 import java.util.UUID
 
-class WebClientPermissionService(private val webClient: WebClient) {
+open class WebClientPermissionService(private val webClient: WebClient) {
 
-    private val permissionRightUrl = "user_permission_rights"
-    private val permissionRoleUrl = "user_permission_roles"
+    protected open val permissionRightUrl = "user_permission_rights"
+    protected open val permissionRoleUrl = "user_permission_roles"
 
-    fun getPermissionRole(
+    open fun getPermissionRole(
         userId: UUID,
         accessObjectId: UUID,
         accessObjectType: String
@@ -44,7 +44,7 @@ class WebClientPermissionService(private val webClient: WebClient) {
             .bodyToMono(UserPermissionRoleDto::class.java)
     }
 
-    fun setPermissionRights(
+    open fun setPermissionRights(
         userId: UUID,
         accessObjectId: UUID,
         accessObjectType: String,
@@ -71,7 +71,7 @@ class WebClientPermissionService(private val webClient: WebClient) {
             .bodyToMono(ListUserPermissionRightDto::class.java)
     }
 
-    fun getUserPermissionRights(
+    open fun getUserPermissionRights(
         userId: UUID,
         accessObjectId: UUID,
         accessObjectType: AccessObjectTypeEnum
@@ -94,7 +94,7 @@ class WebClientPermissionService(private val webClient: WebClient) {
             .bodyToMono(ListUserPermissionRightDto::class.java)
     }
 
-    fun checkPermission(
+    open fun checkPermission(
         userId: UUID,
         accessObjectId: UUID,
         right: PermissionRight
@@ -118,7 +118,7 @@ class WebClientPermissionService(private val webClient: WebClient) {
             .bodyToMono(Boolean::class.java)
     }
 
-    fun checkPermission(
+    open fun checkPermission(
         userId: UUID,
         accessObjectId: UUID,
         right: String
@@ -127,7 +127,7 @@ class WebClientPermissionService(private val webClient: WebClient) {
     }
 
     @Throws(PermissionRoleExistException::class)
-    fun createPermissionRole(
+    open fun createPermissionRole(
         userId: UUID,
         accessObjectType: AccessObjectTypeEnum,
         accessObjectId: UUID,
@@ -152,7 +152,7 @@ class WebClientPermissionService(private val webClient: WebClient) {
             .bodyToMono(UserPermissionRoleDto::class.java)
     }
 
-    private fun <T : Exception> convertErrorResponseToMonoErrorAtRights(response: ErrorResponse): Mono<T> {
+    protected open fun <T : Exception> convertErrorResponseToMonoErrorAtRights(response: ErrorResponse): Mono<T> {
         return when (response.status) {
             HttpStatus.FORBIDDEN.value() -> Mono.error(AccessDeniedException("Not auth"))
             HttpStatus.NOT_ACCEPTABLE.value() -> Mono.error(RuntimeException(response.message))
@@ -161,7 +161,7 @@ class WebClientPermissionService(private val webClient: WebClient) {
         }
     }
 
-    private fun <T : Exception> convertErrorResponseToMonoErrorAtRole(response: ErrorResponse): Mono<T> {
+    protected open fun <T : Exception> convertErrorResponseToMonoErrorAtRole(response: ErrorResponse): Mono<T> {
         return when (response.status) {
             HttpStatus.FORBIDDEN.value() -> Mono.error(AccessDeniedException("Not auth"))
             HttpStatus.NOT_ACCEPTABLE.value() -> Mono.error(RuntimeException(response.message))
@@ -171,7 +171,7 @@ class WebClientPermissionService(private val webClient: WebClient) {
         }
     }
 
-    fun editPermissionRole(
+    open fun editPermissionRole(
         userId: UUID,
         accessObjectType: AccessObjectTypeEnum,
         accessObjectId: UUID,
@@ -195,7 +195,7 @@ class WebClientPermissionService(private val webClient: WebClient) {
             .bodyToMono(UserPermissionRoleDto::class.java)
     }
 
-    fun deletePermissionRole(
+    open fun deletePermissionRole(
         userId: UUID,
         accessObjectType: AccessObjectTypeEnum,
         accessObjectId: UUID,
